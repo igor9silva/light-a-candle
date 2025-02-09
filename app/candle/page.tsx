@@ -1,16 +1,63 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
+import { MiniKit, PayCommandInput, Tokens } from "@worldcoin/minikit-js"
 import { useSearchParams } from "next/navigation"
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 export default function CandlePage() {
+  //
   const searchParams = useSearchParams()
   const type = searchParams.get("type")
   const [isLit, setIsLit] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const lightCandle = () => {
-    setIsLit(true)
+  const lightCandle = async () => {
+    //
+    try {
+      setIsLoading(true)
+
+      // Example payload - adjust according to your needs
+      const payload: PayCommandInput = {
+				reference: `candle-${type}`,
+				to: "0x6c56e6Df31503cEcc3197E5B9896cbb1B1085bAa",
+				description: `Candle for ${type}`,
+				tokens: [{
+					symbol: Tokens.WLD,
+					token_amount: "1",
+				}],
+			};
+
+      const { finalPayload } = await MiniKit.commandsAsync.pay(payload)
+
+      // Validate the payment with your backend
+      const response = await fetch("/api/validate-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(finalPayload),
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error("Payment validation failed")
+      }
+
+      setIsLit(true)
+      toast.success("Candle lit successfully!")
+    } catch (error) {
+      toast.error("Failed to light candle. Please try again.")
+      console.error(error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (!MiniKit.isInstalled()) {
+    return <div className="text-center text-sm text-gray-500">Only available through the World App.</div>
   }
 
   return (
@@ -21,8 +68,8 @@ export default function CandlePage() {
           className={`absolute bottom-0 left-0 right-0 h-1/2 bg-orange-400 transition-all duration-300 ${isLit ? "opacity-100" : "opacity-0"}`}
         ></div>
       </div>
-      <Button onClick={lightCandle} className="mt-8" disabled={isLit}>
-        {isLit ? "Candle Lit" : "Light a Candle"}
+      <Button onClick={lightCandle} className="mt-8" disabled={isLit || isLoading}>
+        {isLoading ? "Processing..." : isLit ? "Candle Lit" : "Light a Candle"}
       </Button>
     </div>
   )
