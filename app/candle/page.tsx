@@ -3,10 +3,10 @@
 import { Button } from "@/components/ui/button"
 import { MiniKit, PayCommandInput, Tokens } from "@worldcoin/minikit-js"
 import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { toast } from "sonner"
 
-export default function CandlePage() {
+function CandlePageContent() {
   //
   const searchParams = useSearchParams()
   const type = searchParams.get("type")
@@ -72,6 +72,14 @@ export default function CandlePage() {
         {isLoading ? "Processing..." : isLit ? "Candle Lit" : "Light a Candle"}
       </Button>
     </div>
+  )
+}
+
+export default function CandlePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CandlePageContent />
+    </Suspense>
   )
 }
 
