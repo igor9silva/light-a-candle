@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { MiniKit, PayCommandInput, Tokens } from "@worldcoin/minikit-js"
+import { MiniKit, PayCommandInput, Tokens, tokenToDecimals } from "@worldcoin/minikit-js"
 import { useSearchParams } from "next/navigation"
 import { Suspense, useState } from "react"
 import { toast } from "sonner"
@@ -21,11 +21,11 @@ function CandlePageContent() {
       // Example payload - adjust according to your needs
       const payload: PayCommandInput = {
 				reference: `candle-${type}`,
-				to: "0x6c56e6Df31503cEcc3197E5B9896cbb1B1085bAa",
+				to: "0xB92B00d21f9Fa2c4C41FeD88B06ad305dcAC28B2",
 				description: `Candle for ${type}`,
 				tokens: [{
 					symbol: Tokens.WLD,
-					token_amount: "1",
+					token_amount: tokenToDecimals(1, Tokens.WLD).toString(),
 				}],
 			};
 
